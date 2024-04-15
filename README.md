@@ -1,2 +1,2 @@
-# Full Stack Develoepr Course
+# Full Stack Developer Course
  
