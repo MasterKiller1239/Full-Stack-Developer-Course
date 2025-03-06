@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaawansowana Strona z jQuery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .user-list {
+            margin-top: 20px;
+        }
+        .user-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .user-list li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Witaj na Zaawansowanej Stronie z jQuery!</h1>
+
+    <!-- Formularz -->
+    <form id="userForm">
+        <div class="form-group">
+            <label for="username">Nazwa użytkownika:</label>
+            <input type="text" id="username" name="username" placeholder="Wprowadź nazwę użytkownika">
+            <span class="error" id="usernameError"></span>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Wprowadź email">
+            <span class="error" id="emailError"></span>
+        </div>
+        <button type="submit">Dodaj Użytkownika</button>
+    </form>
+
+    <!-- Lista użytkowników -->
+    <div class="user-list">
+        <h2>Lista Użytkowników</h2>
+        <ul id="userList"></ul>
+    </div>
+
+    <!-- Przycisk do pobierania danych z API -->
+    <button id="fetchUsers">Pobierz Użytkowników z API</button>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Walidacja formularza
+        $('#userForm').on('submit', function(event) {
+            event.preventDefault();
+            let isValid = true;
+
+            // Walidacja nazwy użytkownika
+            if ($('#username').val().trim() === '') {
+                $('#usernameError').text('Nazwa użytkownika jest wymagana.');
+                isValid = false;
+            } else {
+                $('#usernameError').text('');
+            }
+
+            // Walidacja emaila
+            const email = $('#email').val().trim();
+            if (email === '') {
+                $('#emailError').text('Email jest wymagany.');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                $('#emailError').text('Wprowadź poprawny adres email.');
+                isValid = false;
+            } else {
+                $('#emailError').text('');
+            }
+
+            // Jeśli formularz jest poprawny, dodaj użytkownika
+            if (isValid) {
+                addUserToList($('#username').val().trim(), email);
+                $('#username').val('');
+                $('#email').val('');
+            }
+        });
+
+        // Funkcja dodająca użytkownika do listy
+        function addUserToList(username, email) {
+            const userItem = `<li>${username} - ${email} <button class="deleteUser">Usuń</button></li>`;
+            $('#userList').append(userItem);
+            animateUserItem($('#userList li').last());
+        }
+
+        // Animacja dodanego elementu
+        function animateUserItem(element) {
+            element.hide().fadeIn(1000).addClass('animate__animated animate__bounceIn');
+        }
+
+        // Usuwanie użytkownika z listy
+        $('#userList').on('click', '.deleteUser', function() {
+            $(this).parent().fadeOut(500, function() {
+                $(this).remove();
+            });
+        });
+
+        // Pobieranie danych z zewnętrznego API
+        $('#fetchUsers').on('click', function() {
+            $.ajax({
+                url: 'https://jsonplaceholder.typicode.com/users',
+                method: 'GET',
+                success: function(users) {
+                    $('#userList').empty();
+                    users.forEach(function(user) {
+                        addUserToList(user.username, user.email);
+                    });
+                },
+                error: function() {
+                    alert('Wystąpił błąd podczas pobierania danych.');
+                }
+            });
+        });
+
+        // Funkcja walidująca email
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+    });
+</script>
+
+</body>
+</html>
